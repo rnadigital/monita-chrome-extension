@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Monita Extension</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                width: 250px;
+                padding: 10px;
+            }
+            .status {
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+            .dot {
+                height: 10px;
+                width: 10px;
+                border-radius: 50%;
+                display: inline-block;
+                margin-right: 5px;
+            }
+            .green {
+                background-color: green;
+            }
+            .grey {
+                background-color: grey;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="status">
+            <span id="statusDot" class="dot grey"></span>
+            <span id="statusText">Monita not detected</span>
+        </div>
+        <div>
+            <label for="tealiumToggle">Enable Tealium Logger:</label>
+            <input type="checkbox" id="tealiumToggle" />
+        </div>
+        <div id="versionInfo" style="margin-top: 10px"></div>
+
+        <script src="popup.js"></script>
+    </body>
+</html>
