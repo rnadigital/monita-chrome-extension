@@ -115,9 +115,7 @@
                     return originalLink.apply(this, arguments);
                   };
 
-                  console.log(
-                    "Tealium utag.view/link successfully patched for cleaner console logging.",
-                  );
+                  console.log("Monita Debugger Loaded.");
                 } catch (err) {
                   console.error("Error in patchTealium:", err);
                 }
