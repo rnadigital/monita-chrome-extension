@@ -1,4 +1,3 @@
-// tealiumPatch.js
 (() => {
   try {
     let patched = false;
@@ -22,7 +21,6 @@
           "eventName",
         ];
 
-        // Reorder keys: priority keys first, then alphabetical
         function reorderKeys(obj) {
           const newObj = {};
           // 1) Priority keys in order
@@ -31,7 +29,7 @@
               newObj[key] = obj[key];
             }
           });
-          // 2) The rest, sorted alphabetically
+          // 2) Then everything else, sorted alphabetically
           Object.keys(obj)
             .filter((k) => !priorityKeys.includes(k))
             .sort()
@@ -41,13 +39,30 @@
           return newObj;
         }
 
-        // Create a safe JSON snapshot
         function snapshot(o) {
           try {
             return JSON.parse(JSON.stringify(o));
           } catch (e) {
-            return o; // fallback if it can't be stringified
+            return o; // fallback
           }
+        }
+
+        // Helper to get nested values (dot notation) for placeholders
+        function getValue(obj, path) {
+          return path.split(".").reduce((acc, part) => {
+            if (acc && typeof acc === "object" && part in acc) {
+              return acc[part];
+            }
+            return undefined;
+          }, obj);
+        }
+
+        // Replaces {{key}} placeholders with the corresponding data
+        function parsePattern(pattern, data) {
+          return pattern.replace(/\{\{(.*?)\}\}/g, (match, p1) => {
+            const val = getValue(data, p1.trim());
+            return val !== undefined ? val : "unknown";
+          });
         }
 
         function logTealiumCall(methodName, args) {
@@ -62,7 +77,7 @@
               reordered,
             );
 
-            // If Monita is detected, try to send beacon
+            // Check if Monita is present
             const monitaDetected =
               window.__monita_settings &&
               window.__monita_settings.global &&
@@ -70,14 +85,26 @@
               typeof monitaSendBeacon === "function";
 
             if (monitaDetected) {
-              // Build event name: <event>:<eventName>:<eventCategory>
-              const event = reordered.event || "unknown";
-              const eventName = reordered.eventName || "unknown";
-              const eventCategory = reordered.eventCategory || "unknown";
-              const eventLabel = `${event}:${eventName}:${eventCategory}`;
+              // Get the user-defined pattern (set by your extension)
+              const pattern =
+                window.__monita_eventPattern ||
+                "{{event}}:{{eventName}}:{{eventCategory}}";
 
-              console.log("monitaSendBeacon is available, sending data...");
+              // Build the final event label dynamically
+              const eventLabel = parsePattern(pattern, reordered);
+
+              // ***** CRITICAL PART *****
+              // Overwrite both event & eventName so Monita sees this final label
+              reordered.event = eventLabel;
+              reordered.eventName = eventLabel;
+
+              console.log(
+                "monitaSendBeacon is available, sending data with eventLabel:",
+                eventLabel,
+              );
+
               try {
+                // Pass the exact same label as the second argument
                 monitaSendBeacon("Monita", eventLabel, reordered);
               } catch (err) {
                 console.error("Error sending beacon to Monita:", err);

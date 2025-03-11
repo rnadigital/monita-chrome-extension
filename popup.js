@@ -4,10 +4,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const statusDot = document.getElementById("statusDot");
   const statusText = document.getElementById("statusText");
   const versionInfo = document.getElementById("versionInfo");
+  const eventPatternEl = document.getElementById("eventPattern");
 
-  // 1) Get stored toggle state
-  chrome.storage.sync.get(["tealiumEnabled"], (result) => {
+  // 1) Load stored toggle & pattern
+  chrome.storage.sync.get(["tealiumEnabled", "eventPattern"], (result) => {
     toggleEl.checked = !!result.tealiumEnabled;
+    eventPatternEl.value =
+      result.eventPattern || "{{event}}:{{eventName}}:{{eventCategory}}";
   });
 
   // 2) Listen for toggle changes
@@ -15,7 +18,12 @@ document.addEventListener("DOMContentLoaded", () => {
     chrome.storage.sync.set({ tealiumEnabled: this.checked });
   });
 
-  // 3) Check if Monita is present on the current active tab
+  // 3) Listen for pattern changes
+  eventPatternEl.addEventListener("input", function () {
+    chrome.storage.sync.set({ eventPattern: this.value });
+  });
+
+  // 4) Check if Monita is present on the current active tab
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (!tabs || tabs.length === 0) return;
     const tabId = tabs[0].id;
@@ -23,7 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
     chrome.scripting.executeScript(
       {
         target: { tabId },
-        // important: run in the MAIN world to access page-level variables
         world: "MAIN",
         func: () => {
           try {

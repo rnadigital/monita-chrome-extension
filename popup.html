@@ -26,6 +26,13 @@
             .grey {
                 background-color: grey;
             }
+            .row {
+                margin-bottom: 8px;
+            }
+            input[type="text"] {
+                width: 100%;
+                box-sizing: border-box;
+            }
         </style>
     </head>
     <body>
@@ -33,9 +40,17 @@
             <span id="statusDot" class="dot grey"></span>
             <span id="statusText">Monita not detected</span>
         </div>
-        <div>
+        <div class="row">
             <label for="tealiumToggle">Enable Tealium Logger:</label>
             <input type="checkbox" id="tealiumToggle" />
+        </div>
+        <div class="row">
+            <label for="eventPattern">Event Pattern:</label><br />
+            <input
+                type="text"
+                id="eventPattern"
+                placeholder="{{event}}:{{eventName}}:{{eventCategory}}"
+            />
         </div>
         <div id="versionInfo" style="margin-top: 10px"></div>
 
